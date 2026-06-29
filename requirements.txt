@@ -1,0 +1,4 @@
+insane @ git+https://github.com/Tsjerk/Insane.git@25d03f0422ec5fb0546c7f8632289e5d633937a2
+numpy==2.5.0
+setuptools==80.10.2
+simopt==0.4.0
