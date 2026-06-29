@@ -14,3 +14,4 @@ __pycache__/
 .vscode/
 results/raw/
 backup/
+.venv/
