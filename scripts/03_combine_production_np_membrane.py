@@ -1,4 +1,5 @@
 import os
+import math
 
 membrane_gro = "systems/membrane/cancer_membrane.gro"
 np_gro = "systems/production_np/production_plga_np_10nm_neg1.gro"
@@ -8,62 +9,108 @@ out_gro = f"{outdir}/production_plga_membrane_initial.gro"
 
 os.makedirs(outdir, exist_ok=True)
 
-box_x = 20.0
-box_y = 20.0
-box_z = 30.0
+BOX = (20.0, 20.0, 30.0)
 
 np_shift_x = 3.0
 np_shift_y = 3.0
 np_shift_z = 17.0
 
+water_removal_cutoff = 0.35
+
+
 def read_gro(filename):
-    with open(filename, "r") as f:
+    with open(filename) as f:
         lines = f.readlines()
 
-    title = lines[0].strip()
     natoms = int(lines[1].strip())
-    atoms = lines[2:2 + natoms]
-    box = lines[2 + natoms].strip()
+    atoms = []
 
-    return title, natoms, atoms, box
+    for line in lines[2:2 + natoms]:
+        fields = line.split()
+        atoms.append({
+            "resnr": int(line[0:5]),
+            "resname": line[5:10].strip(),
+            "atomname": line[10:15].strip(),
+            "x": float(fields[-3]),
+            "y": float(fields[-2]),
+            "z": float(fields[-1]),
+        })
 
-mem_title, mem_n, mem_atoms, mem_box = read_gro(membrane_gro)
-np_title, np_n, np_atoms, np_box = read_gro(np_gro)
+    return atoms
 
-combined_atoms = []
 
-for line in mem_atoms:
-    combined_atoms.append(line.rstrip())
-
-atom_id = mem_n + 1
-
-for line in np_atoms:
-    resnr = int(line[0:5])
-    resname = line[5:10]
-    atomname = line[10:15]
-
-    x = float(line[20:28]) + np_shift_x
-    y = float(line[28:36]) + np_shift_y
-    z = float(line[36:44]) + np_shift_z
-
-    combined_atoms.append(
-        f"{resnr:5d}{resname:<5}{atomname:>5}{atom_id:5d}"
-        f"{x:8.3f}{y:8.3f}{z:8.3f}"
+def distance(a, b):
+    return math.sqrt(
+        (a["x"] - b["x"]) ** 2 +
+        (a["y"] - b["y"]) ** 2 +
+        (a["z"] - b["z"]) ** 2
     )
 
-    atom_id += 1
+
+def write_atom(f, atom, atomnr):
+    f.write(
+        f"{atom['resnr'] % 100000:5d}"
+        f"{atom['resname'][:5]:<5}"
+        f"{atom['atomname'][:5]:>5}"
+        f"{atomnr % 100000:5d}"
+        f"{atom['x']:8.3f}"
+        f"{atom['y']:8.3f}"
+        f"{atom['z']:8.3f}\n"
+    )
+
+
+membrane = read_gro(membrane_gro)
+np_atoms = read_gro(np_gro)
+
+shifted_np = []
+
+for atom in np_atoms:
+    shifted_np.append({
+        "resnr": atom["resnr"],
+        "resname": atom["resname"],
+        "atomname": atom["atomname"],
+        "x": atom["x"] + np_shift_x,
+        "y": atom["y"] + np_shift_y,
+        "z": atom["z"] + np_shift_z,
+    })
+
+filtered_membrane = []
+removed_water = 0
+
+for atom in membrane:
+    is_water = atom["resname"] == "W" or atom["atomname"] == "W"
+
+    remove = False
+
+    if is_water:
+        for npa in shifted_np:
+            if distance(atom, npa) < water_removal_cutoff:
+                remove = True
+                break
+
+    if remove:
+        removed_water += 1
+    else:
+        filtered_membrane.append(atom)
+
+all_atoms = filtered_membrane + shifted_np
 
 with open(out_gro, "w") as f:
-    f.write("Production PLGA nanoparticle above POPC/POPE/CHOL membrane\n")
-    f.write(f"{len(combined_atoms):5d}\n")
+    f.write("Surface-control PLGA NP above POPC/POPE/CHOL membrane; waters removed near NP\n")
+    f.write(f"{len(all_atoms):5d}\n")
 
-    for atom in combined_atoms:
-        f.write(atom + "\n")
+    atomnr = 1
 
-    f.write(f"{box_x:10.5f}{box_y:10.5f}{box_z:10.5f}\n")
+    for atom in all_atoms:
+        write_atom(f, atom, atomnr)
+        atomnr += 1
 
-print(f"Combined system written to: {out_gro}")
-print(f"Membrane beads: {mem_n}")
-print(f"Production NP beads: {np_n}")
-print(f"Total beads: {len(combined_atoms)}")
-print("Production NP shifted above membrane.")
+    f.write(f"{BOX[0]:10.5f}{BOX[1]:10.5f}{BOX[2]:10.5f}\n")
+
+print(f"Output: {out_gro}")
+print(f"Original membrane beads: {len(membrane)}")
+print(f"Waters removed: {removed_water}")
+print(f"Remaining membrane/solvent beads: {len(filtered_membrane)}")
+print(f"NP beads: {len(shifted_np)}")
+print(f"Total atoms: {len(all_atoms)}")
+print(f"Expected topology atoms: {len(all_atoms)}")
