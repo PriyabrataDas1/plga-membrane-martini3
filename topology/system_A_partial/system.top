@@ -1,0 +1,21 @@
+#include "../../forcefield/martini_v3.0.0.itp"
+#include "../../forcefield/martini_v3.0.0_phospholipids_v1.itp"
+#include "../../forcefield/martini_v3.0_sterols_v1.0.itp"
+#include "../../forcefield/martini_v3.0.0_solvents_v1.itp"
+#include "../../forcefield/martini_v3.0.0_ions_v1.itp"
+#include "plga_np.itp"
+
+[ system ]
+; name
+System A - Partial insertion of PLGA nanoparticle
+
+[ molecules ]
+; name      number
+POPC        304
+POPE        202
+CHOL        169
+POPC        304
+POPE        202
+CHOL        169
+W         81008
+PLGA_NP       1

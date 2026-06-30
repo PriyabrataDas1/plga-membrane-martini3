@@ -1,0 +1,33 @@
+integrator              = md
+dt                      = 0.02
+nsteps                  = 100000
+
+nstxout-compressed      = 1000
+nstenergy               = 1000
+nstlog                  = 1000
+
+continuation            = no
+constraint_algorithm    = lincs
+constraints             = none
+
+cutoff-scheme           = Verlet
+nstlist                 = 20
+pbc                     = xyz
+
+coulombtype             = reaction-field
+rcoulomb                = 1.1
+epsilon_r               = 15
+
+vdw_type                = cutoff
+rvdw                    = 1.1
+
+tcoupl                  = v-rescale
+tc-grps                 = System
+tau_t                   = 1.0
+ref_t                   = 310
+
+pcoupl                  = no
+
+gen_vel                 = yes
+gen_temp                = 310
+gen_seed                = -1
