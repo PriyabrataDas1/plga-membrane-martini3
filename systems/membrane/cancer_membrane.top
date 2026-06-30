@@ -1,0 +1,16 @@
+#include "martini.itp"
+
+[ system ]
+; name
+INSANE! Membrane UpperLeaflet>POPC:POPE:CHOL=45.0:30.0:25.0 LowerLeaflet>POPC:POPE:CHOL=45.0:30.0:25.0
+
+
+[ molecules ]
+; name  number
+POPC           304 ; Defined in the packaged 'lipids.dat'.
+POPE           202 ; Defined in the packaged 'lipids.dat'.
+CHOL           169 ; Defined in the packaged 'lipids.dat'.
+POPC           304 ; Defined in the packaged 'lipids.dat'.
+POPE           202 ; Defined in the packaged 'lipids.dat'.
+CHOL           169 ; Defined in the packaged 'lipids.dat'.
+W            85719
