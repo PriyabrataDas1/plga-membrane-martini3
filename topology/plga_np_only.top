@@ -1,0 +1,10 @@
+#include "../forcefield/martini_v3.0.0.itp"
+#include "plga_np.itp"
+
+[ system ]
+; name
+PLGA nanoparticle only
+
+[ molecules ]
+; name      number
+PLGA_NP       1
