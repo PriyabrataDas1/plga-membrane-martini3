@@ -1,0 +1,50 @@
+title                   = PLGA insertion pulling
+
+integrator              = md
+dt                      = 0.02
+nsteps                  = 250000
+
+cutoff-scheme           = Verlet
+nstlist                 = 20
+
+coulombtype             = Reaction-Field
+rcoulomb                = 1.1
+
+vdwtype                 = Cut-off
+rvdw                    = 1.1
+
+tcoupl                  = v-rescale
+tc-grps                 = System
+tau_t                   = 1.0
+ref_t                   = 310
+
+pcoupl                  = no
+pcoupltype              = semiisotropic
+tau_p                   = 12.0
+ref_p                   = 1.0 1.0
+compressibility         = 3e-4 3e-4
+
+constraints             = none
+
+nstxout-compressed      = 500
+nstenergy               = 500
+nstlog                  = 500
+
+gen_vel                 = no
+
+; ---------- Pull code ----------
+
+pull                    = yes
+pull-ngroups            = 2
+pull-ncoords            = 1
+
+pull-group1-name        = PLGA_NP
+pull-group2-name        = MEMBRANE
+
+pull-coord1-type        = umbrella
+pull-coord1-geometry    = direction-periodic
+pull-coord1-groups      = 1 2
+pull-coord1-dim         = N N Y
+pull-coord1-vec         = 0 0 -1
+pull-coord1-rate        = 0.0005
+pull-coord1-k           = 1000
